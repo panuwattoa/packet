@@ -19,7 +19,7 @@ func TestReadBytes(t *testing.T) {
 }
 
 func TestReadString(t *testing.T) {
-	want := "abc"
+	want := "abc999999999"
 
 	w := NewWriter()
 	w.WriteString(want)

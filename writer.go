@@ -33,7 +33,7 @@ func NewWriter() Writer {
 
 // NewWriterWithHeader will create new Writer with header(uint16) for contain Content-Length
 func NewWriterWithHeader() Writer {
-	byteSlice := GetByteSliceFromPool() 
+	byteSlice := GetByteSliceFromPool()
 
 	w := Writer{
 		byteSlice:  byteSlice,
@@ -45,9 +45,20 @@ func NewWriterWithHeader() Writer {
 	return w
 }
 
+func NewWriterWithOpCode(op byte) Writer {
+	byteSlice := GetByteSliceFromPool()
+
+	w := Writer{
+		byteSlice:  byteSlice,
+		currentCap: len(byteSlice),
+	}
+	w.WriteBytes([]byte{0, op})
+	return w
+}
+
 // finish mean anyone cant use this writer anymore because we release the []byte
 func (w Writer) finish() {
-	
+
 }
 
 // GetByteSliceFromPool will return []byte from pool
@@ -69,7 +80,7 @@ func (w Writer) Bytes() []byte {
 func (w Writer) BytesWithHeader() []byte {
 	contentLength := uint16(w.idx)
 
-	if (w.idx < 2) {
+	if w.idx < 2 {
 		return w.byteSlice[:w.idx]
 	}
 
@@ -98,7 +109,7 @@ func (w *Writer) WriteString(s string) {
 		w.growBufferCap(w.idx + 8 + l)
 	}
 
-	w.WriteUInt64(uint64(l))
+	w.WriteUInt16(uint16(l))
 
 	copy(w.byteSlice[w.idx:w.idx+l], s)
 
@@ -253,10 +264,10 @@ func (w *Writer) WriteUInt64(n uint64) {
 func (w *Writer) growBufferCap(lengthNeed int) {
 	multiplier := 1
 
-	for w.currentCap * multiplier < lengthNeed {
+	for w.currentCap*multiplier < lengthNeed {
 		multiplier *= 2
 	}
 
-	w.byteSlice = append(w.byteSlice, make([]byte, w.currentCap * multiplier)...)
+	w.byteSlice = append(w.byteSlice, make([]byte, w.currentCap*multiplier)...)
 	w.currentCap = w.currentCap * multiplier
 }
